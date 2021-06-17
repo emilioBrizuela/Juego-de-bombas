@@ -1,0 +1,150 @@
+package app;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+/**
+ * Formulario
+ */
+public class Formulario extends JFrame implements ActionListener {
+
+    private JButton izq;
+    private JButton der;
+
+    private int TAMAÑO = 40;
+
+    // personaje
+    private JLabel personaje;
+
+    private int LIMINFERIORX = 50;
+    private int LIMSUPERIORX = 100;
+    private int EJEYPERSONAJE = 230;
+
+    // BOMBAS
+    private JLabel bomba;
+    private Timer temporizador;
+    private int timepoCaidaInicial = 100;
+    private int cantBombas = 6;
+    private int aparicionBomba;
+
+    /** Inicializa el contenido del formulario */
+    public Formulario() {
+        super("Bombardero");
+        setLayout(null);
+        cargarFormulario();
+    }
+
+    /** Inicializa los parametros. */
+    private void cargarFormulario() {
+
+        der = new JButton("\u2190");
+        izq = new JButton("\u2192");
+        izq.setBounds(110, 300, 50, 30);
+        izq.addActionListener(this);
+        add(izq);
+
+        der.setBounds(30, 300, 50, 30);
+        der.addActionListener(this);
+        add(der);
+
+        personaje = new JLabel();
+        personaje.setBounds(75, EJEYPERSONAJE, TAMAÑO, TAMAÑO);
+        personaje.setIcon(imagenTamaño("img/img.jpg", personaje));
+        add(personaje);
+
+        bomba = new JLabel();
+        bomba.setBounds(50000, 50, TAMAÑO, TAMAÑO); // no se vea el inicio de la bomba.
+        bomba.setIcon(imagenTamaño("img/img2.jpg", bomba));
+        caidaBomba();
+        add(bomba);
+    }
+
+    /**
+     * Crea la imagen y le da un tamaño preestablecido
+     * 
+     * @param rutaImg  dirección de la imagen
+     * @param etiqueta etiqueta
+     * @return imagen
+     */
+    private Icon imagenTamaño(String rutaImg, JLabel etiqueta) {
+        ImageIcon img = new ImageIcon(rutaImg);
+        Icon icon = new ImageIcon(
+                img.getImage().getScaledInstance(etiqueta.getWidth(), etiqueta.getHeight(), Image.SCALE_DEFAULT));
+        repaint();
+        return icon;
+    }
+
+    /**
+     * Movimientos del personaje izquierda o derecha.
+     */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        // TODO Auto-generated method stub
+        if (e.getSource() == izq) {
+            if (personaje.getX() >= LIMSUPERIORX) {
+                personaje.setBounds(personaje.getX(), EJEYPERSONAJE, TAMAÑO, TAMAÑO);
+            } else {
+                personaje.setBounds(personaje.getX() + 5, EJEYPERSONAJE, TAMAÑO, TAMAÑO);
+            }
+        }
+        if (e.getSource() == der) {
+            if (personaje.getX() <= LIMINFERIORX) {
+                personaje.setBounds(personaje.getX(), EJEYPERSONAJE, TAMAÑO, TAMAÑO);
+            } else {
+                personaje.setBounds(personaje.getX() - 5, EJEYPERSONAJE, TAMAÑO, TAMAÑO);
+            }
+        }
+    }
+
+    /**
+     * Genera donde aparecera la bomba aleatoriamente y su caida.
+     * La bomba aparece al 50, aumenta su velocidad de 15 en 15.
+     * El distancia entre personaje y bomba debe ser superior a 20 para no ser dañado.
+     */
+    
+    private void caidaBomba() {
+  
+         aparicionBomba = (int) (Math.random() * (LIMSUPERIORX - LIMINFERIORX)) + LIMINFERIORX;
+        
+        temporizador = new Timer(timepoCaidaInicial, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                // System.err.println(personaje.getY() - bomba.getY() );
+                // System.err.println(personaje.getX() - bomba.getX() );
+                // && personaje.getX() - bomba.getX() <10 && personaje.getX() - bomba.getX() >0
+                
+                if ((EJEYPERSONAJE - bomba.getY() <= 20 && EJEYPERSONAJE - bomba.getY() >= 0)
+                && (personaje.getX() - bomba.getX() <= 20 && personaje.getX() - bomba.getX() >= 0)) {
+                    
+                    temporizador.stop();
+                    personaje.setIcon(null);
+                    JOptionPane.showMessageDialog(null, "HAS PERDIDO", "PERDEDOR", JOptionPane.INFORMATION_MESSAGE);
+                } else if (bomba.getY() >= EJEYPERSONAJE) {
+                    cantBombas--;
+                    if (cantBombas == 0) {
+                        temporizador.stop();
+                        bomba.setIcon(null);
+                        JOptionPane.showMessageDialog(null, "HAS GANADO", "GANADOR", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        System.err.println(cantBombas);
+                        timepoCaidaInicial -= 15;
+                        
+                        temporizador.setDelay(timepoCaidaInicial);
+                        System.err.println(temporizador.getDelay());
+                        aparicionBomba = (int) (Math.random() * (LIMSUPERIORX - LIMINFERIORX)) + LIMINFERIORX;
+                        bomba.setBounds(aparicionBomba, 50,TAMAÑO, TAMAÑO);
+                        System.err.println(bomba.getX());
+                    }
+                } else {
+                    bomba.setBounds(aparicionBomba, bomba.getY() + 10, TAMAÑO, TAMAÑO);
+                }
+            }
+        
+        });
+        temporizador.start();
+
+    }
+
+}
